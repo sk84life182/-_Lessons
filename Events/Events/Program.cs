@@ -8,28 +8,32 @@ namespace Events
         {
             Counter counter = new Counter();
 
-            Event MyEvent = new Event();
-            MyEvent.TimeEvent += counter.Handler1;
+            counter.Handler1 += Counter_Handler1;
+            counter.Handler2 += Counter_Handler2;
 
-            MyEvent.OnTimeEvent();
+            counter.StopFunction();
         }
-    }
 
-    delegate void CounterHandler();
-
-    class Event
-    {
-        public event CounterHandler TimeEvent;
-
-        public void OnTimeEvent()
+        private static void Counter_Handler1(object sender, Whatever e)
         {
-            TimeEvent();
+            Console.WriteLine(e.Message);
         }
+
+        private static void Counter_Handler2(object sender, Whatever e)
+        {
+            Console.WriteLine(e.Message);
+        }
+
     }
+
+    public delegate void CounterHandler();
+    public delegate void ShowMessage(string message);
 
     public class Counter
     {
-        public void Handler1()
+        public int stopPoint { get; set; }
+
+        public void StopFunction()
         {
             Random rnd = new Random();
             int stopPoint = rnd.Next(0, 100);
@@ -38,10 +42,22 @@ namespace Events
             {
                 if (i == stopPoint)
                 {
-
-                    Console.WriteLine($"Пора действовать, ведь уже {stopPoint}!");
+                    Handler1?.Invoke(this, new Whatever($"Пора действовать, ведь уже {stopPoint}!"));
+                    Handler2?.Invoke(this, new Whatever($"Уже {stopPoint}, давно пора было начать!"));
                 }
             }
         }
+
+        public event EventHandler<Whatever> Handler1;
+        public event EventHandler<Whatever> Handler2;
+    }
+
+    public class Whatever : EventArgs
+    {
+        public Whatever(string message)
+        {
+            Message = message;
+        }
+        public string Message { get; private set; }
     }
 }
